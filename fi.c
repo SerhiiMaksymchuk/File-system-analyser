@@ -30,15 +30,17 @@ int main(void)
 	pthread_t threads[MAX_THREAD_NUMBER] = {};
 	parameters_t thread_params[MAX_THREAD_NUMBER] = {};
 	aFile = setmntent("/etc/mtab", "r");
-	int i = 0;
+	int i = 0, ret = 0;
 
 	if (aFile == NULL)
 	{
 		perror("setmntent");
-		exit(1);
+		ret = -1;
+		
+		goto Exit;
 	}
 	
-	printf("Filesystem\t Size \t Used \t Avail \tMounted on\n");
+	printf("Filesystem\t\t Size \t\t Used \t\t Avail \t\tMounted on\n");
        
 	while (NULL != (ent = getmntent(aFile)))
 	{
@@ -46,7 +48,9 @@ int main(void)
 		if (statvfs(ent->mnt_dir, &buff)!=0)
 		{
 			perror("statvfs() error");
-			exit(1);
+			ret = -1;
+	
+			goto Exit;
 		}
 
 		printf("%s \t\t", ent->mnt_fsname);
@@ -54,11 +58,10 @@ int main(void)
 		printf("%ld \t\t",  ((buff.f_blocks * buff.f_frsize) / 1024) - ((buff.f_bavail * buff.f_frsize) / 1024));
 		printf("%ld \t\t", (buff.f_bavail * buff.f_frsize) / 1024);
 		printf("%s \n", ent->mnt_dir);
-	//	fileext("/root/filesystem/df");
+
 		if (i >= MAX_THREAD_NUMBER)
 		{
 		         perror("fail to create thread\n");
-//			fileext((void*)ent->mnt_dir);
 			 parameters_t p_main;
 			 p_main.thread_id = -1;
 			 strcpy(p_main.mnt_dir, ent->mnt_dir);
@@ -74,7 +77,9 @@ int main(void)
 			if (pthc_ret)
 			{
 				perror("fail to create thread\n");
-				//return
+				ret = -1;
+	
+				goto Exit;
 			}
 		}
 		i++;
@@ -90,6 +95,10 @@ int main(void)
 
 	printf("*text documents %f%%\n*binary files %f%%\n*libraries(so,a) %f%%\n",txt ,bin, lib);	
 	endmntent(aFile);
+
+Exit:
+
+	return ret;
 
 }
 
