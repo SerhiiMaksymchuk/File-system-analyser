@@ -8,7 +8,6 @@
 
 void *fileext(void *);
 
-static double txt = 0, bin = 0, lib = 0;
 static int txtcount = 0, bincount = 0, libcount = 0;
 
 typedef struct {
@@ -25,6 +24,7 @@ typedef struct {
 int main(void)
 {
 	struct mntent *ent;
+	double txt = 0, bin = 0, lib = 0;
 	struct statvfs buff;
 	FILE *aFile;
 	pthread_t threads[MAX_THREAD_NUMBER] = {};
